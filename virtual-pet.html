@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Pet</title>
+    <title>Virtual Pet Game</title>
     <style>
         body {
             margin: 0;
@@ -2101,57 +2101,3 @@
     </script>
 </body>
 </html> 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
-
-<script>
-  // Your Firebase config
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-
-  // Google Sign-In
-  const provider = new firebase.auth.GoogleAuthProvider();
-
-  function signIn() {
-    auth.signInWithPopup(provider)
-      .then((result) => {
-        const user = result.user;
-        console.log('Signed in as:', user.displayName);
-      })
-      .catch((error) => {
-        console.error('Sign-in error:', error);
-      });
-  }
-</script>
-
-<button onclick="signIn()">Sign in with Google</button>
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDn5KLTliVCImGyyaYPJR5WvlUM9cDsK1k",
-  authDomain: "virtual-pet-f942d.firebaseapp.com",
-  projectId: "virtual-pet-f942d",
-  storageBucket: "virtual-pet-f942d.firebasestorage.app",
-  messagingSenderId: "1084420980096",
-  appId: "1:1084420980096:web:2f8cf72092c92811be9565",
-  measurementId: "G-24PJ2ML6PJ"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
