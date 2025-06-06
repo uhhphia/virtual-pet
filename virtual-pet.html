@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Pet</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .bedroom {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, 
+                #FFE4C4 0%, /* Warmer ceiling color */
+                #FFE4C4 60%, 
+                #8B4513 60%, 
+                #8B4513 100%
+            );
+            position: relative;
+            border: none;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Add warm ambient lighting */
+        .bedroom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(
+                circle at 70% 20%,
+                rgba(255, 223, 186, 0.4) 0%,
+                rgba(255, 223, 186, 0.1) 40%,
+                transparent 70%
+            );
+            pointer-events: none;
+        }
+
+        /* Add a cozy rug */
+        .rug {
+            position: absolute;
+            bottom: 10vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            height: 300px;
+            background: #D77B5D;
+            border-radius: 250px / 150px;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Rug pattern */
+        .rug::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border-radius: 230px / 130px;
+            border: 8px solid #C26B4D;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Add a window */
+        .window {
+            position: absolute;
+            top: 10vh;
+            left: 5vw;
+            width: 200px;
+            height: 300px;
+            background: linear-gradient(to bottom,
+                #87CEEB 0%,
+                #E0FFFF 100%
+            );
+            border: 15px solid #8B4513;
+            border-radius: 10px;
+            box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Window frame */
+        .window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            height: 100%;
+            width: 10px;
+            background: #8B4513;
+            transform: translateX(-50%);
+        }
+
+        /* Window curtains */
+        .curtain-left, .curtain-right {
+            position: absolute;
+            top: -20px;
+            width: 100px;
+            height: 340px;
+            background: #FFB6C1;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .curtain-left {
+            left: -30px;
+            transform: perspective(300px) rotateY(-5deg);
+        }
+
+        .curtain-right {
+            right: -30px;
+            transform: perspective(300px) rotateY(5deg);
+        }
+
+        /* Curtain folds */
+        .curtain-left::before, .curtain-right::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 15px,
+                rgba(0, 0, 0, 0.05) 15px,
+                rgba(0, 0, 0, 0.05) 30px
+            );
+        }
+
+        /* Add a table lamp */
+        .lamp {
+            position: absolute;
+            top: 15vh;
+            right: 10vw;
+            z-index: 3;
+        }
+
+        /* Lamp base */
+        .lamp-base {
+            width: 60px;
+            height: 100px;
+            background: linear-gradient(to right, #8B4513, #A0522D, #8B4513);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        /* Lamp shade */
+        .lamp-shade {
+            width: 120px;
+            height: 80px;
+            background: #FFF5E6;
+            position: absolute;
+            top: -80px;
+            left: -30px;
+            border-radius: 60px 60px 0 0;
+            transform: perspective(200px) rotateX(5deg);
+            box-shadow: 0 0 30px rgba(255, 223, 186, 0.6);
+        }
+
+        /* Lamp light effect */
+        .lamp-light {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(
+                circle at center,
+                rgba(255, 223, 186, 0.4) 0%,
+                transparent 70%
+            );
+            pointer-events: none;
+        }
+
+        /* Add some floating dust particles for atmosphere */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-20px) translateX(10px); }
+        }
+
+        .dust {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .dust:nth-child(1) { top: 20%; left: 30%; animation: float 8s infinite; }
+        .dust:nth-child(2) { top: 40%; left: 50%; animation: float 12s infinite; }
+        .dust:nth-child(3) { top: 30%; left: 70%; animation: float 10s infinite; }
+        .dust:nth-child(4) { top: 60%; left: 40%; animation: float 9s infinite; }
+        .dust:nth-child(5) { top: 50%; left: 60%; animation: float 11s infinite; }
+
+        /* Dog toys scattered around */
+        .toy {
+            position: absolute;
+            z-index: 1;
+        }
+
+        /* Tennis ball */
+        .toy.tennis-ball {
+            width: 40px;
+            height: 40px;
+            background: #B8E82B;
+            border-radius: 50%;
+            box-shadow: inset -5px -5px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .toy.tennis-ball::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                transparent 45%, 
+                #FFFFFF 45%, 
+                #FFFFFF 55%, 
+                transparent 55%
+            );
+            border-radius: 50%;
+            transform: rotate(45deg);
+        }
+
+        /* Bone */
+        .toy.bone {
+            width: 60px;
+            height: 25px;
+            background: #F5F5F5;
+            border-radius: 12px;
+            position: relative;
+            transform: rotate(var(--rotation, 0deg));
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .toy.bone::before,
+        .toy.bone::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 35px;
+            background: #F5F5F5;
+            border-radius: 12px;
+            top: -5px;
+        }
+
+        .toy.bone::before {
+            left: -8px;
+        }
+
+        .toy.bone::after {
+            right: -8px;
+        }
+
+        /* Rope toy */
+        .toy.rope {
+            width: 80px;
+            height: 15px;
+            background: repeating-linear-gradient(
+                45deg,
+                #4169E1,
+                #4169E1 10px,
+                #FF6B6B 10px,
+                #FF6B6B 20px
+            );
+            border-radius: 8px;
+            transform: rotate(var(--rotation, 0deg));
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .toy.rope::before,
+        .toy.rope::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #FFFFFF;
+            border-radius: 50%;
+            top: -3px;
+        }
+
+        .toy.rope::before {
+            left: -10px;
+        }
+
+        .toy.rope::after {
+            right: -10px;
+        }
+
+        /* Squeaky toy */
+        .toy.squeaky {
+            width: 45px;
+            height: 55px;
+            background: #FF69B4;
+            border-radius: 25px 25px 20px 20px;
+            transform: rotate(var(--rotation, 0deg));
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .toy.squeaky::before {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #FFB6C1;
+            border-radius: 50%;
+            top: 10px;
+            left: 15px;
+        }
+
+        .toy.squeaky::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 10px;
+            background: #FFB6C1;
+            border-radius: 5px;
+            bottom: 10px;
+            left: 10px;
+        }
+
+        /* Furniture */
+        .bed {
+            position: absolute;
+            bottom: 15vh;
+            right: 5vw;
+            width: 300px;
+            height: 300px;
+            background: #8B4513;
+            border-radius: 50%;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transform: perspective(1000px) rotateX(10deg);
+            overflow: hidden;
+        }
+
+        /* Bed rim */
+        .bed::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #DEB887;
+            border-radius: 50% 50% 0 0;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Bed mattress */
+        .bed::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            background: #FFE4C4;
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Bed cushioning pattern */
+        .bed .cushion {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80%;
+            height: 80%;
+            transform: translate(-50%, -50%);
+            background: 
+                radial-gradient(circle at center, transparent 0%, transparent 80%, #DEB887 80%, #DEB887 100%),
+                repeating-conic-gradient(
+                    from 0deg,
+                    #FFE4C4 0deg 30deg,
+                    #F5DEB3 30deg 60deg
+                );
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        /* Bed pillow */
+        .bed .pillow {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+            background: #FFF;
+            border-radius: 50%;
+            transform: rotate(-5deg);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+
+        /* Pillow detail */
+        .bed .pillow::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(45deg, #FFF, #F0F0F0);
+        }
+
+        /* Bed blanket */
+        .bed .blanket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: #FFC0CB;  /* Changed from #FFB6C1 to an even lighter pink */
+            border-radius: 20px 20px 0 0;
+            z-index: 1;
+        }
+
+        /* Blanket texture */
+        .bed .blanket::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.1) 10px,
+                rgba(255, 255, 255, 0.1) 20px
+            );
+            border-radius: 60px;
+        }
+
+        /* Pet */
+        .pet {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 240px;
+            background: #E8C39E;
+            border-radius: 50% 50% 40% 40%;
+            transition: all 1s ease-in-out;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+
+        /* Head and face positioning */
+        .pet .head {
+            position: absolute;
+            top: -90px;
+            left: 60px;
+            width: 180px;
+            height: 180px;
+            background: #E8C39E;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 1s ease-in-out;
+            z-index: 2;
+        }
+
+        /* Dog's eyes */
+        .pet .eye-left, .pet .eye-right {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            background: #000;
+            border-radius: 50%;
+            top: 60px;
+            z-index: 3;
+        }
+
+        .pet .eye-left {
+            left: 30px;
+        }
+
+        .pet .eye-right {
+            right: 30px;
+        }
+
+        /* Dog's nose */
+        .pet .nose {
+            position: absolute;
+            width: 42px;
+            height: 30px;
+            background: #000;
+            border-radius: 24px;
+            bottom: 40px;
+            left: 69px;
+            z-index: 3;
+        }
+
+        /* Dog's ears */
+        .pet .ear-left, .pet .ear-right {
+            position: absolute;
+            width: 55px;
+            height: 85px;
+            background: #C68B59;
+            border-radius: 50% 50% 0 0;
+            top: -30px;
+            z-index: 1;
+            transform-origin: bottom center;
+            transition: all 1s ease-in-out;
+        }
+
+        .pet .ear-left {
+            left: 15px;
+            transform: rotate(-15deg);
+        }
+
+        .pet .ear-right {
+            right: 15px;
+            transform: rotate(15deg);
+        }
+
+        /* Add inner ear detail */
+        .pet .ear-left::after,
+        .pet .ear-right::after {
+            content: '';
+            position: absolute;
+            width: 35px;
+            height: 55px;
+            background: #A0522D;
+            border-radius: 50% 50% 0 0;
+            top: 10px;
+            left: 10px;
+            opacity: 0.5;
+        }
+
+        /* Slight ear movement animation */
+        @keyframes earWiggle {
+            0%, 100% { transform: rotate(-15deg); }
+            50% { transform: rotate(-10deg); }
+        }
+
+        @keyframes earWiggleRight {
+            0%, 100% { transform: rotate(15deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        .pet .ear-left {
+            animation: earWiggle 4s infinite;
+        }
+
+        .pet .ear-right {
+            animation: earWiggleRight 4s infinite;
+        }
+
+        /* Snout patch */
+        .pet .patch.snout {
+            position: absolute;
+            width: 90px;
+            height: 70px;
+            background: #FFF5E6;
+            border-radius: 40px;
+            bottom: 30px;
+            left: 45px;
+            z-index: 2;
+        }
+
+        /* Features shadow and highlights */
+        .pet .eye-left::after,
+        .pet .eye-right::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            top: 5px;
+            left: 5px;
+            opacity: 0.7;
+        }
+
+        /* Nose highlight */
+        .pet .nose::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 7px;
+            top: 5px;
+            left: 5px;
+        }
+
+        /* Dog's tail */
+        .pet .tail {
+            position: absolute;
+            width: 45px;
+            height: 120px;
+            background: #E8C39E;  /* Match body color */
+            border-radius: 30px;
+            bottom: 60px;
+            right: -15px;
+            transform: rotate(30deg);
+            transform-origin: bottom center;
+            animation: wagTail 1s infinite alternate;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1; /* Place tail behind body */
+        }
+
+        /* Dog's legs */
+        .pet .leg {
+            position: absolute;
+            width: 45px;
+            height: 90px;
+            background: #C68B59;  /* Darker shade for legs */
+            border-radius: 24px;
+            bottom: -60px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .pet .leg-front-left {
+            left: 60px;
+        }
+
+        .pet .leg-front-right {
+            left: 135px;
+        }
+
+        .pet .leg-back-left {
+            right: 135px;
+        }
+
+        .pet .leg-back-right {
+            right: 60px;
+        }
+
+        /* Add some white patches */
+        .pet .patch {
+            position: absolute;
+            background: #FFF5E6;  /* Light cream for patches */
+            border-radius: 50%;
+        }
+
+        .pet .patch.chest {
+            width: 150px;
+            height: 120px;
+            bottom: 20px;
+            left: 75px;
+            border-radius: 50% 50% 40% 40%;
+        }
+
+        .pet.active {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        /* Hand */
+        .hand {
+            position: absolute;
+            width: 40px;
+            height: 60px;
+            background: #FFE4C4;
+            border-radius: 15px;
+            transform-origin: bottom center;
+            display: none;
+            transition: all 0.3s;
+        }
+
+        .hand.active {
+            display: block;
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            z-index: 100;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        /* Status bars */
+        .status-bars {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            z-index: 100;
+            min-width: 300px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-bar-container {
+            margin: 10px 0;
+        }
+
+        .status-bar-label {
+            display: grid;
+            grid-template-columns: auto 50px;
+            align-items: center;
+            margin-bottom: 4px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .status-bar-label .name {
+            font-size: 14px;
+        }
+
+        .status-bar-label .value {
+            font-size: 14px;
+            text-align: right;
+            padding-right: 2px;
+        }
+
+        .status-bar {
+            width: 100%;
+            background: #ddd;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background: rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-bar-fill {
+            height: 100%;
+            transition: width 0.3s;
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .status-bar-fill.happiness {
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+        }
+
+        .status-bar-fill.hunger {
+            background: linear-gradient(90deg, #32CD32, #228B22);
+        }
+
+        .status-bar-fill.cleanliness {
+            background: linear-gradient(90deg, #87CEEB, #4169E1);
+        }
+
+        .status-bar-fill.energy {
+            background: linear-gradient(90deg, #FF69B4, #FF1493);
+        }
+
+        /* Add pulsing effect when energy is low */
+        @keyframes pulseLowEnergy {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .status-bar-fill.energy.low {
+            animation: pulseLowEnergy 1s infinite;
+        }
+
+        @keyframes wagTail {
+            from { transform: rotate(30deg); }
+            to { transform: rotate(60deg); }
+        }
+
+        /* Bowls */
+        .bowl {
+            position: absolute;
+            width: 120px;
+            height: 50px;
+            bottom: 15vh;
+            left: 20vw;
+            transform-style: preserve-3d;
+            transform: perspective(1000px) rotateX(45deg);
+        }
+
+        /* Bowl top (opening) */
+        .bowl::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 50px;
+            background: #D3D3D3;
+            border-radius: 50%;
+            transform: translateZ(40px);
+        }
+
+        /* Bowl contents base styles */
+        .bowl .contents {
+            position: absolute;
+            width: 105px;
+            height: 45px;
+            border-radius: 50%;
+            top: 2px;
+            left: 7px;
+            transform: translateZ(45px);
+            overflow: hidden;
+        }
+
+        /* Food bowl specific styles */
+        .bowl.food .contents {
+            background: #CD853F;
+            height: 42px;
+            transform: translateZ(45px);
+            background: radial-gradient(circle at 30% 30%, #DEB887, #CD853F);
+            box-shadow: inset 0 2px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Food kibbles */
+        .bowl.food .contents::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 50% 50%, #8B4513 3px, transparent 4px);
+            background-size: 12px 12px;
+            background-position: 0 0;
+            opacity: 1;
+        }
+
+        /* Food kibbles layer 2 for depth */
+        .bowl.food .contents::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 50% 50%, #8B4513 3px, transparent 4px);
+            background-size: 12px 12px;
+            background-position: 6px 6px;
+            opacity: 0.8;
+        }
+
+        /* Water bowl specific styles */
+        .bowl.water .contents {
+            height: 42px;
+            transform: translateZ(45px);
+            background: #ADD8E6;
+            background: linear-gradient(45deg, #87CEEB, #E0FFFF);
+            box-shadow: inset 0 2px 15px rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Side walls adjusted for higher content */
+        .bowl .side {
+            position: absolute;
+            width: 120px;
+            height: 45px;
+            background: linear-gradient(to bottom, #D3D3D3, #A9A9A9);
+            transform-origin: top;
+            transform: rotateX(-90deg);
+            border-radius: 60px 60px;
+            box-shadow: inset 0 -5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Water surface effect - enhanced visibility */
+        .bowl.water .contents::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.6) 50%,
+                rgba(255, 255, 255, 0) 100%);
+            animation: waterShine 3s linear infinite;
+            transform: skewX(45deg);
+        }
+
+        /* Water ripples - enhanced visibility */
+        .bowl.water .contents::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle at center,
+                rgba(255, 255, 255, 0.7) 0%,
+                transparent 50%);
+            transform: translate(-50%, -50%);
+            animation: waterRipple 3s ease-in-out infinite;
+        }
+
+        @keyframes waterShine {
+            from { transform: translateX(-100%) skewX(45deg); }
+            to { transform: translateX(100%) skewX(45deg); }
+        }
+
+        @keyframes waterRipple {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.7;
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.5;
+            }
+        }
+
+        /* Adjusted inner shadow for higher content */
+        .bowl::after {
+            content: '';
+            position: absolute;
+            width: 105px;
+            height: 42px;
+            border-radius: 50%;
+            top: 2px;
+            left: 7px;
+            transform: translateZ(45px);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .bowl.food {
+            left: 20vw;
+        }
+
+        .bowl.water {
+            left: calc(20vw + 150px);
+        }
+
+        /* Bowl label */
+        .bowl .label {
+            position: absolute;
+            bottom: -30px;
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            color: #4A4A4A;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8),
+                        -1px -1px 2px rgba(255, 255, 255, 0.8);
+            font-weight: bold;
+            transform: translateZ(0);
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 4px 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(2px);
+            letter-spacing: 1px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .bowl.food .label {
+            color: #8B4513;
+        }
+
+        .bowl.water .label {
+            color: #1E90FF;
+        }
+
+        /* Position classes for the dog */
+        .pet.at-food-bowl {
+            top: 75vh;
+            left: 20vw;
+            transform: translate(-50%, -50%);
+            transition: all 1s ease-in-out;
+        }
+
+        /* Eating animation */
+        @keyframes eat {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+            100% { transform: translateY(0); }
+        }
+
+        .pet.eating {
+            animation: eat 0.8s infinite;
+        }
+
+        .pet.eating .head {
+            animation: none;
+            transform: translateY(20px) rotate(45deg);
+            transform-origin: bottom center;
+        }
+
+        /* Bowl highlight effect */
+        @keyframes bowlGlow {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+            100% { filter: brightness(1); }
+        }
+
+        .bowl.active {
+            animation: bowlGlow 1s infinite;
+            z-index: 5;
+        }
+
+        /* Walking animation */
+        @keyframes walk {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .pet.walking .leg-front-left,
+        .pet.walking .leg-back-right {
+            animation: walk 0.4s infinite;
+        }
+
+        .pet.walking .leg-front-right,
+        .pet.walking .leg-back-left {
+            animation: walk 0.4s infinite reverse;
+        }
+
+        /* Transition for all pet movements */
+        .pet {
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Head bobbing for eating */
+        @keyframes headBob {
+            0% { transform: translateY(0) rotate(45deg); }
+            50% { transform: translateY(15px) rotate(45deg); }
+            100% { transform: translateY(0) rotate(45deg); }
+        }
+
+        .pet.eating .head {
+            animation: headBob 0.8s infinite;
+            transform-origin: bottom center;
+        }
+
+        /* Drinking animation */
+        @keyframes drink {
+            0% { transform: rotate(45deg); }
+            50% { transform: rotate(55deg); }
+            100% { transform: rotate(45deg); }
+        }
+
+        .pet.drinking {
+            animation: drink 1.5s infinite;
+        }
+
+        .pet.drinking .head {
+            animation: none;
+            transform: translateY(15px) rotate(10deg);
+        }
+
+        /* Ball styles */
+        .ball {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, #FF4D4D, #CC0000);
+            border-radius: 50%;
+            display: none;
+            z-index: 3;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .ball::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            top: 8px;
+            left: 8px;
+        }
+
+        .ball.active {
+            display: block;
+            animation: throwBall 5s ease-in-out;
+        }
+
+        /* Ball throw animation */
+        @keyframes throwBall {
+            0% {
+                transform: translate(0, 0);
+            }
+            15% {
+                transform: translate(200px, -100px) rotate(180deg);
+            }
+            30% {
+                transform: translate(400px, 0) rotate(360deg);
+            }
+            45% {
+                transform: translate(600px, -50px) rotate(540deg);
+            }
+            60% {
+                transform: translate(400px, 100px) rotate(720deg);
+            }
+            75% {
+                transform: translate(200px, 50px) rotate(900deg);
+            }
+            90%, 100% {
+                transform: translate(0, 0) rotate(1080deg);
+            }
+        }
+
+        /* Dog chasing animation */
+        .pet.chasing {
+            animation: chaseBall 5s ease-in-out;
+        }
+
+        @keyframes chaseBall {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            15% {
+                transform: translate(150px, -100px) rotate(15deg);
+            }
+            30% {
+                transform: translate(350px, 0) rotate(-15deg);
+            }
+            45% {
+                transform: translate(550px, -50px) rotate(15deg);
+            }
+            60% {
+                transform: translate(350px, 100px) rotate(195deg);
+            }
+            75% {
+                transform: translate(150px, 50px) rotate(375deg);
+            }
+            90% {
+                transform: translate(0, 0) rotate(720deg);
+            }
+            95% {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+        }
+
+        /* Running legs animation */
+        .pet.chasing .leg {
+            animation: runningLeg 0.3s infinite alternate;
+        }
+
+        .pet.chasing .leg-front-left,
+        .pet.chasing .leg-back-right {
+            animation-delay: 0.15s;
+        }
+
+        @keyframes runningLeg {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        /* Excited tail wagging for play */
+        .pet.chasing .tail {
+            animation: excitedWag 0.3s infinite alternate;
+        }
+
+        @keyframes excitedWag {
+            from { transform: rotate(20deg); }
+            to { transform: rotate(70deg); }
+        }
+
+        /* Bouncing ears during chase */
+        .pet.chasing .ear-left {
+            animation: bounceEarLeft 0.5s infinite alternate;
+        }
+
+        .pet.chasing .ear-right {
+            animation: bounceEarRight 0.5s infinite alternate;
+        }
+
+        @keyframes bounceEarLeft {
+            from { transform: rotate(-15deg); }
+            to { transform: rotate(-30deg); }
+        }
+
+        @keyframes bounceEarRight {
+            from { transform: rotate(15deg); }
+            to { transform: rotate(30deg); }
+        }
+
+        /* Add transition styles for percentage values */
+        .status-bar-label .value {
+            transition: transform 0.3s ease, color 0.3s ease;
+            display: inline-block;
+        }
+
+        /* Remove all kennel styles */
+        .kennel, .kennel::before, .kennel::after, .kennel-entrance, .kennel-entrance::before, .kennel-base, .kennel-cushion, .kennel-window {
+            display: none;
+        }
+
+        /* Wire Crate */
+        .wire-crate {
+            position: absolute;
+            bottom: 40vh;  /* Increased from 25vh to move it much higher */
+            left: 5vw;
+            width: 280px;
+            height: 200px;
+            background: transparent;
+            border: 2px solid #333;
+            border-radius: 2px;
+            z-index: 2;
+        }
+
+        /* Vertical wires - adjusted spacing for larger size */
+        .wire-crate::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                to right,
+                transparent,
+                transparent 13px,  /* Increased from 9px */
+                #333 13px,
+                #333 14px         /* Increased from 10px */
+            );
+            pointer-events: none;
+        }
+
+        /* Horizontal wires - adjusted spacing for larger size */
+        .wire-crate::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 13px,  /* Increased from 9px */
+                #333 13px,
+                #333 14px         /* Increased from 10px */
+            );
+            pointer-events: none;
+        }
+
+        /* Plastic bottom tray */
+        .crate-tray {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 25px;  /* Increased from 20px */
+            background: #1a1a1a;
+            border-radius: 0 0 2px 2px;
+        }
+
+        /* Crate door */
+        .crate-door {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            bottom: 30px;  /* Adjusted for larger tray */
+            width: 190px;  /* Increased from 140px */
+            border: 2px solid #333;
+            border-radius: 2px;
+        }
+
+        /* Door vertical wires - adjusted spacing */
+        .crate-door::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                to right,
+                transparent,
+                transparent 13px,  /* Increased from 9px */
+                #333 13px,
+                #333 14px         /* Increased from 10px */
+            );
+            pointer-events: none;
+        }
+
+        /* Door horizontal wires - adjusted spacing */
+        .crate-door::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 13px,  /* Increased from 9px */
+                #333 13px,
+                #333 14px         /* Increased from 10px */
+            );
+            pointer-events: none;
+        }
+
+        /* Door latch */
+        .door-latch {
+            position: absolute;
+            top: 50%;
+            right: -20px;  /* Adjusted position */
+            width: 30px;   /* Increased from 25px */
+            height: 50px;  /* Increased from 40px */
+            background: #333;
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+
+        /* Door hinges */
+        .door-hinge-top, .door-hinge-bottom {
+            position: absolute;
+            left: -5px;    /* Adjusted position */
+            width: 10px;   /* Increased from 8px */
+            height: 25px;  /* Increased from 20px */
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .door-hinge-top {
+            top: 15px;     /* Adjusted position */
+        }
+
+        .door-hinge-bottom {
+            bottom: 15px;  /* Adjusted position */
+        }
+
+        /* Dog Food Bag */
+        .dog-food-bag {
+            position: absolute;
+            bottom: 40vh;
+            right: 8vw;
+            width: 150px;
+            height: 200px;
+            background: #FFFFFF;
+            border-radius: 10px;
+            transform: perspective(500px) rotateX(5deg);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        /* Red top section */
+        .bag-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #E31837;
+            border-radius: 10px 10px 0 0;
+        }
+
+        /* Brand name - adjusted for smaller bag */
+        .brand-name {
+            position: absolute;
+            top: 55px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 18px;
+            color: #E31837;
+            line-height: 1.2;
+        }
+
+        /* Sub text - adjusted for smaller bag */
+        .sub-text {
+            position: absolute;
+            top: 85px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        /* Dog illustration on bag */
+        .dog-illustration {
+            display: none;
+        }
+
+        /* Size label */
+        .size-label {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Type label */
+        .type-label {
+            position: absolute;
+            top: 100px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: #666;
+        }
+
+        /* Weight label - moved for smaller bag */
+        .weight-label {
+            position: absolute;
+            bottom: 18px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Table styles */
+        .table {
+            position: absolute;
+            bottom: 50vh;
+            right: 20vw;
+            width: 440px;
+            height: 64px;
+            background: linear-gradient(90deg, #a97c50 60%, #7c5430 100%);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            z-index: 1;
+        }
+        .table-leg {
+            position: absolute;
+            width: 18px;
+            height: 150px;
+            background: linear-gradient(180deg, #a97c50 60%, #7c5430 100%);
+            border-radius: 9px;
+            bottom: -148px;
+        }
+        .table-leg.front-left { left: 0; }
+        .table-leg.front-right { right: 0; }
+        .table-leg.back-left { left: 40px; }
+        .table-leg.back-right { right: 40px; }
+
+        /* Dog Treats Jar */
+        .treat-jar {
+            position: absolute;
+            left: 38px;
+            top: -50px;
+            width: 50px;
+            height: 65px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.5) 60%, rgba(224,207,160,0.2) 100%);
+            border-radius: 14px 14px 12px 12px / 24px 24px 12px 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            border: 2px solid #bfa76a;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        .treat-jar-treat {
+            position: absolute;
+            width: 10px;
+            height: 7px;
+            background: #a0522d;
+            border-radius: 50%;
+            z-index: 2;
+            opacity: 0.85;
+        }
+        .treat-jar-treat.t1 { left: 8px; top: 38px; }
+        .treat-jar-treat.t2 { left: 22px; top: 45px; background: #deb887; }
+        .treat-jar-treat.t3 { left: 30px; top: 35px; background: #8b4513; }
+        .treat-jar-treat.t4 { left: 15px; top: 55px; background: #cd853f; }
+        .treat-jar-treat.t5 { left: 32px; top: 52px; background: #a0522d; }
+        .treat-jar-lid {
+            position: absolute;
+            top: -12px;
+            left: 4px;
+            width: 40px;
+            height: 16px;
+            background: linear-gradient(180deg, #a97c50 60%, #7c5430 100%);
+            border-radius: 8px 8px 6px 6px / 12px 12px 6px 6px;
+            border: 2px solid #a97c50;
+            z-index: 3;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .treat-jar-lid::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 8px;
+            width: 24px;
+            height: 4px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 2px;
+        }
+        .treat-jar-label {
+            position: absolute;
+            bottom: 7px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff8dc;
+            border: 1px solid #bfa76a;
+            border-radius: 6px;
+            padding: 2px 7px;
+            font-size: 11px;
+            color: #a97c50;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            z-index: 4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+        }
+    </style>
+</head>
+<body>
+    <div class="bedroom">
+        <div class="window">
+            <div class="curtain-left"></div>
+            <div class="curtain-right"></div>
+        </div>
+        <div class="lamp">
+            <div class="lamp-shade"></div>
+            <div class="lamp-base"></div>
+            <div class="lamp-light"></div>
+        </div>
+        <div class="rug"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <!-- Dog toys scattered around -->
+        <div class="toy bone" style="bottom: 12vh; left: 15vw; --rotation: 25deg;"></div>
+        <div class="toy bone" style="bottom: 18vh; right: 25vw; --rotation: -15deg;"></div>
+        <div class="toy tennis-ball" style="bottom: 15vh; left: 35vw;"></div>
+        <div class="toy tennis-ball" style="bottom: 13vh; right: 15vw;"></div>
+        <div class="toy rope" style="bottom: 14vh; left: 60vw; --rotation: 35deg;"></div>
+        <div class="toy squeaky" style="bottom: 16vh; right: 40vw; --rotation: -10deg;"></div>
+        <div class="bed">
+            <div class="cushion"></div>
+            <div class="pillow"></div>
+            <div class="blanket"></div>
+        </div>
+        <div class="bowl food">
+            <div class="side"></div>
+            <div class="contents"></div>
+            <div class="label">Food</div>
+        </div>
+        <div class="bowl water">
+            <div class="side"></div>
+            <div class="contents"></div>
+            <div class="label">Water</div>
+        </div>
+        <div class="ball"></div>
+        <div class="pet">
+            <div class="tail"></div>
+            <div class="head">
+                <div class="ear-left"></div>
+                <div class="ear-right"></div>
+                <div class="eye-left"></div>
+                <div class="eye-right"></div>
+                <div class="nose"></div>
+                <div class="patch snout"></div>
+            </div>
+            <div class="patch chest"></div>
+            <div class="leg leg-front-left"></div>
+            <div class="leg leg-front-right"></div>
+            <div class="leg leg-back-left"></div>
+            <div class="leg leg-back-right"></div>
+        </div>
+        <div class="hand"></div>
+        <div class="wire-crate">
+            <div class="crate-tray"></div>
+            <div class="crate-door">
+                <div class="door-latch"></div>
+                <div class="door-hinge-top"></div>
+                <div class="door-hinge-bottom"></div>
+            </div>
+        </div>
+        <div class="dog-food-bag">
+            <div class="bag-top"></div>
+            <div class="brand-name">PHIA2COOL</div>
+            <div class="sub-text">DOG FOOD</div>
+            <svg class="dog-food-pile" viewBox="0 0 48 24" style="position:absolute; top:110px; left:50%; transform:translateX(-50%); width:80px; height:40px;" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="24" cy="20" rx="18" ry="6" fill="#a0522d"/>
+                <ellipse cx="14" cy="18" rx="4" ry="2.5" fill="#8b4513"/>
+                <ellipse cx="34" cy="18" rx="4" ry="2.5" fill="#8b4513"/>
+                <ellipse cx="24" cy="16" rx="5" ry="3" fill="#cd853f"/>
+                <ellipse cx="20" cy="20" rx="2.5" ry="1.5" fill="#deb887"/>
+                <ellipse cx="28" cy="20" rx="2.5" ry="1.5" fill="#deb887"/>
+                <ellipse cx="10" cy="22" rx="2" ry="1.2" fill="#a0522d"/>
+                <ellipse cx="38" cy="22" rx="2" ry="1.2" fill="#a0522d"/>
+                <ellipse cx="18" cy="14" rx="2" ry="1.2" fill="#8b4513"/>
+                <ellipse cx="30" cy="14" rx="2" ry="1.2" fill="#8b4513"/>
+                <ellipse cx="24" cy="10" rx="1.5" ry="1" fill="#cd853f"/>
+                <ellipse cx="12" cy="16" rx="1.5" ry="1" fill="#deb887"/>
+                <ellipse cx="36" cy="16" rx="1.5" ry="1" fill="#deb887"/>
+            </svg>
+            <div class="weight-label">30 LB</div>
+        </div>
+        <div class="table">
+            <div class="table-leg front-left"></div>
+            <div class="table-leg front-right"></div>
+            <div class="table-leg back-left"></div>
+            <div class="table-leg back-right"></div>
+            <div class="treat-jar">
+                <div class="treat-jar-lid"></div>
+                <div class="treat-jar-label">Dog Treats</div>
+                <div class="treat-jar-treat t1"></div>
+                <div class="treat-jar-treat t2"></div>
+                <div class="treat-jar-treat t3"></div>
+                <div class="treat-jar-treat t4"></div>
+                <div class="treat-jar-treat t5"></div>
+                <div class="treat-jar-treat" style="left: 5px; top: 60px; background: #a0522d;"></div>
+                <div class="treat-jar-treat" style="left: 15px; top: 60px; background: #deb887;"></div>
+                <div class="treat-jar-treat" style="left: 25px; top: 60px; background: #8b4513;"></div>
+                <div class="treat-jar-treat" style="left: 35px; top: 60px; background: #cd853f;"></div>
+                <div class="treat-jar-treat" style="left: 40px; top: 60px; background: #a0522d;"></div>
+                <div class="treat-jar-treat" style="left: 10px; top: 52px; background: #deb887;"></div>
+                <div class="treat-jar-treat" style="left: 20px; top: 52px; background: #8b4513;"></div>
+                <div class="treat-jar-treat" style="left: 30px; top: 52px; background: #cd853f;"></div>
+                <div class="treat-jar-treat" style="left: 38px; top: 52px; background: #a0522d;"></div>
+                <div class="treat-jar-treat" style="left: 5px; top: 44px; background: #deb887;"></div>
+                <div class="treat-jar-treat" style="left: 15px; top: 44px; background: #8b4513;"></div>
+                <div class="treat-jar-treat" style="left: 25px; top: 44px; background: #cd853f;"></div>
+                <div class="treat-jar-treat" style="left: 35px; top: 44px; background: #a0522d;"></div>
+                <div class="treat-jar-treat" style="left: 40px; top: 44px; background: #deb887;"></div>
+                <div class="treat-jar-treat" style="left: 20px; top: 30px; background: #a0522d;"></div>
+                <div class="treat-jar-treat" style="left: 35px; top: 42px; background: #deb887;"></div>
+                <div class="treat-jar-treat" style="left: 10px; top: 48px; background: #8b4513;"></div>
+                <div class="treat-jar-treat" style="left: 28px; top: 58px; background: #cd853f;"></div>
+                <div class="treat-jar-treat" style="left: 38px; top: 60px; background: #a0522d;"></div>
+                <div class="treat-jar-treat" style="left: 5px; top: 35px; background: #deb887;"></div>
+                <div class="treat-jar-treat" style="left: 42px; top: 50px; background: #8b4513;"></div>
+                <div class="treat-jar-treat" style="left: 25px; top: 40px; background: #cd853f;"></div>
+                <div class="treat-jar-treat" style="left: 15px; top: 60px; background: #a0522d;"></div>
+                <div class="treat-jar-treat" style="left: 30px; top: 48px; background: #deb887;"></div>
+                <div class="treat-jar-treat" style="left: 40px; top: 55px; background: #8b4513;"></div>
+                <div class="treat-jar-treat" style="left: 12px; top: 25px; background: #cd853f;"></div>
+                <div class="treat-jar-treat" style="left: 32px; top: 25px; background: #a0522d;"></div>
+                <div class="treat-jar-treat" style="left: 22px; top: 55px; background: #deb887;"></div>
+                <div class="treat-jar-treat" style="left: 8px; top: 58px; background: #8b4513;"></div>
+                <div class="treat-jar-treat" style="left: 44px; top: 38px; background: #cd853f;"></div>
+                <div class="treat-jar-treat" style="left: 18px; top: 52px; background: #a0522d;"></div>
+                <div class="treat-jar-treat" style="left: 36px; top: 32px; background: #deb887;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="performAction('pet')">Pet</button>
+        <button onclick="performAction('feed')">Feed</button>
+        <button onclick="performAction('play')">Play</button>
+        <button onclick="performAction('clean')">Clean</button>
+    </div>
+
+    <div class="status-bars">
+        <div class="status-bar-container">
+            <div class="status-bar-label">
+                <span class="name">Happiness</span>
+                <span class="value">100%</span>
+            </div>
+            <div class="status-bar">
+                <div class="status-bar-fill happiness" id="happiness"></div>
+            </div>
+        </div>
+        <div class="status-bar-container">
+            <div class="status-bar-label">
+                <span class="name">Hunger</span>
+                <span class="value">100%</span>
+            </div>
+            <div class="status-bar">
+                <div class="status-bar-fill hunger" id="hunger"></div>
+            </div>
+        </div>
+        <div class="status-bar-container">
+            <div class="status-bar-label">
+                <span class="name">Cleanliness</span>
+                <span class="value">100%</span>
+            </div>
+            <div class="status-bar">
+                <div class="status-bar-fill cleanliness" id="cleanliness"></div>
+            </div>
+        </div>
+        <div class="status-bar-container">
+            <div class="status-bar-label">
+                <span class="name">Energy</span>
+                <span class="value">100%</span>
+            </div>
+            <div class="status-bar">
+                <div class="status-bar-fill energy" id="energy"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pet = document.querySelector('.pet');
+        const hand = document.querySelector('.hand');
+        const ball = document.querySelector('.ball');
+        const stats = {
+            happiness: 100,
+            hunger: 100,
+            cleanliness: 100,
+            energy: 100
+        };
+
+        // Add alert cooldown tracking
+        const alertCooldowns = {
+            happiness: 0,
+            hunger: 0,
+            cleanliness: 0,
+            energy: 0
+        };
+        const ALERT_COOLDOWN = 10000; // 10 seconds cooldown between alerts
+
+        // Add auto-action cooldown tracking
+        const autoActionCooldowns = {
+            happiness: 0,
+            hunger: 0,
+            cleanliness: 0,
+            energy: 0
+        };
+        const AUTO_ACTION_COOLDOWN = 5000; // 5 seconds cooldown between automatic actions
+
+        let isPlaying = false;
+        let isEating = false;
+        let isSleeping = false;
+        let lastActivityTime = Date.now();
+        let lastPercentageUpdate = Date.now();
+        const PERCENTAGE_UPDATE_INTERVAL = 1000; // Update percentages every second
+
+        // Energy decrease rates per second for different states
+        const ENERGY_RATES = {
+            idle: 0.05,      // Very slow decrease when idle
+            active: 0.2,     // Slightly faster decrease when doing simple actions
+            playing: 0.4,    // Faster decrease during play
+            resting: -0.15   // Negative means energy recovery
+        };
+
+        // Different decrease rates for each stat (per second)
+        const STAT_RATES = {
+            happiness: {
+                idle: 0.08,      // Old rate (will be handled separately now)
+                active: -0.3,    // Increases during activities (negative means increase)
+                recovery: 0.5     // Recovery rate when very low
+            },
+            hunger: {
+                idle: 0.063,     // 0.19 every 3 seconds (0.19/3 per second)
+                active: 0.3,     // Decreases faster during activities
+                eating: -1.0     // Fast recovery when eating
+            },
+            cleanliness: {
+                idle: 0.067,    // 0.2% every 3 seconds (0.067 per second)
+                playing: 0.2,    // Gets dirty faster while playing
+                cleaning: -2.0   // Quick recovery when cleaning
+            },
+            energy: {
+                idle: 0.1,       // Slow decrease when idle
+                active: 0.3,     // Moderate decrease during activities
+                playing: 0.5,    // Fast decrease while playing
+                resting: -0.2    // Recovery while resting
+            }
+        };
+
+        let lastHungerUpdate = Date.now();
+        let lastHappinessUpdate = Date.now();
+        let lastCleanlinessUpdate = Date.now();
+        const HUNGER_UPDATE_INTERVAL = 3000; // Update hunger every 3 seconds
+        const HAPPINESS_UPDATE_INTERVAL = 4000; // Update happiness every 4 seconds
+        const CLEANLINESS_UPDATE_INTERVAL = 3000; // Update cleanliness every 3 seconds
+
+        function updateEnergy() {
+            const now = Date.now();
+            const timeDiff = (now - lastActivityTime) / 1000; // Convert to seconds
+            
+            // Determine current state and apply appropriate energy rate
+            let rate = ENERGY_RATES.idle;
+            
+            if (isPlaying) {
+                rate = ENERGY_RATES.playing;
+            } else if (isEating) {
+                rate = ENERGY_RATES.resting;
+            } else if (isSleeping) {
+                rate = ENERGY_RATES.resting;
+            }
+            
+            // Apply energy change based on time difference and state
+            stats.energy = Math.max(0, Math.min(100, stats.energy - (rate * timeDiff)));
+            
+            // Update visual warning for low energy
+            const energyBar = document.getElementById('energy');
+            if (energyBar) {
+                if (stats.energy < 30) {
+                    energyBar.classList.add('low');
+                } else {
+                    energyBar.classList.remove('low');
+                }
+            }
+            
+            lastActivityTime = now;
+        }
+
+        function updateStats() {
+            // Update energy first
+            updateEnergy();
+            
+            const currentTime = Date.now();
+            const timeDiff = (currentTime - lastActivityTime) / 1000; // Convert to seconds
+            const shouldUpdatePercentages = currentTime - lastPercentageUpdate >= PERCENTAGE_UPDATE_INTERVAL;
+            const shouldUpdateHunger = currentTime - lastHungerUpdate >= HUNGER_UPDATE_INTERVAL;
+            const shouldUpdateHappiness = currentTime - lastHappinessUpdate >= HAPPINESS_UPDATE_INTERVAL;
+            const shouldUpdateCleanliness = currentTime - lastCleanlinessUpdate >= CLEANLINESS_UPDATE_INTERVAL;
+
+            // Check for low stats and show alerts with cooldown
+            Object.keys(stats).forEach(stat => {
+                // Check for 0% stats and automatically perform action
+                if (stats[stat] === 0 && currentTime - autoActionCooldowns[stat] >= AUTO_ACTION_COOLDOWN) {
+                    switch(stat) {
+                        case 'happiness':
+                            performAction('play');
+                            break;
+                        case 'hunger':
+                            performAction('feed');
+                            break;
+                        case 'cleanliness':
+                            performAction('clean');
+                            break;
+                        case 'energy':
+                            performAction('feed'); // Feed to restore energy
+                            break;
+                    }
+                    autoActionCooldowns[stat] = currentTime;
+                }
+                // Existing alert code for 15%
+                else if (stats[stat] <= 15 && currentTime - alertCooldowns[stat] >= ALERT_COOLDOWN) {
+                    let message = '';
+                    switch(stat) {
+                        case 'happiness':
+                            message = 'Your pet is unhappy! Try playing with them or petting them.';
+                            break;
+                        case 'hunger':
+                            message = 'Your pet is hungry! Please feed them.';
+                            break;
+                        case 'cleanliness':
+                            message = 'Your pet is dirty! Time for cleaning.';
+                            break;
+                        case 'energy':
+                            message = 'Your pet is tired! Let them rest or feed them to regain energy.';
+                            break;
+                    }
+                    alert(message);
+                    alertCooldowns[stat] = currentTime;
+                }
+            });
+
+            // Update each stat based on current state and time passed
+            Object.keys(stats).forEach(stat => {
+                let rate = STAT_RATES[stat].idle; // Default to idle rate
+
+                // Special handling for hunger to ensure exactly -0.19 every 3 seconds
+                if (stat === 'hunger' && !isEating) {
+                    if (shouldUpdateHunger) {
+                        stats.hunger = Math.max(0, Math.min(100, stats.hunger - 0.19));
+                        lastHungerUpdate = currentTime;
+                    }
+                } 
+                // Special handling for happiness to ensure exactly -2.0 every 4 seconds
+                else if (stat === 'happiness' && !isPlaying) {
+                    if (shouldUpdateHappiness) {
+                        stats.happiness = Math.max(0, Math.min(100, stats.happiness - 2.0));
+                        lastHappinessUpdate = currentTime;
+                    }
+                }
+                // Special handling for cleanliness to ensure exactly -0.2 every 3 seconds
+                else if (stat === 'cleanliness') {
+                    if (shouldUpdateCleanliness) {
+                        stats.cleanliness = Math.max(0, Math.min(100, stats.cleanliness - 0.2));
+                        lastCleanlinessUpdate = currentTime;
+                    }
+                }
+                else {
+                    // Adjust rates based on current state
+                    if (isPlaying) {
+                        rate = stat === 'happiness' ? STAT_RATES.happiness.active :
+                               stat === 'energy' ? STAT_RATES.energy.playing :
+                               stat === 'cleanliness' ? STAT_RATES.cleanliness.playing :
+                               STAT_RATES[stat].active;
+                    } else if (isEating && stat === 'hunger') {
+                        rate = STAT_RATES.hunger.eating;
+                    }
+
+                    // Apply recovery rates for very low stats
+                    if (stats[stat] < 20) {
+                        if (stat === 'happiness') {
+                            rate = Math.min(rate, STAT_RATES.happiness.recovery);
+                        } else if (stat === 'energy' && !isPlaying) {
+                            rate = STAT_RATES.energy.resting;
+                        }
+                    }
+
+                    // Update the stat value
+                    stats[stat] = Math.max(0, Math.min(100, stats[stat] - (rate * timeDiff)));
+                }
+
+                // Update visual elements
+                const element = document.getElementById(stat);
+                if (element) {
+                    // Always update the bar width smoothly
+                    element.style.width = stats[stat] + '%';
+                    
+                    // Only update percentages at a slower rate
+                    if (shouldUpdatePercentages) {
+                        const roundedValue = Math.round(stats[stat]);
+                        const valueDisplay = element.closest('.status-bar').previousElementSibling.querySelector('.value');
+                        if (valueDisplay) {
+                            const currentValue = parseInt(valueDisplay.textContent);
+                            if (currentValue !== roundedValue) {
+                                valueDisplay.style.transform = 'scale(1.1)';
+                                valueDisplay.style.color = '#FF6B6B';
+                                setTimeout(() => {
+                                    valueDisplay.textContent = roundedValue + '%';
+                                    valueDisplay.style.transform = 'scale(1)';
+                                    setTimeout(() => {
+                                        valueDisplay.style.color = '#444';
+                                    }, 300);
+                                }, 150);
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (shouldUpdatePercentages) {
+                lastPercentageUpdate = currentTime;
+            }
+            lastActivityTime = currentTime;
+        }
+
+        function returnToCenter() {
+            pet.classList.remove('at-food-bowl', 'at-water-bowl', 'eating', 'chasing', 'walking', 'drinking');
+            pet.style.transform = 'translate(-50%, -50%)';
+            pet.style.left = '50%';
+            pet.style.top = '50%';
+            document.querySelectorAll('.bowl').forEach(bowl => bowl.classList.remove('active'));
+        }
+
+        function performAction(action) {
+            if (isEating || isPlaying) return;
+
+            // Update energy before checking if action is possible
+            updateEnergy();
+
+            // Check if energy is too low for actions except eating
+            if (action !== 'feed' && stats.energy < 20) {
+                alert('Your pet is too tired! Let them rest or feed them to regain energy.');
+                return;
+            }
+
+            const petRect = pet.getBoundingClientRect();
+            hand.classList.add('active');
+            
+            // Mark the start of a new activity
+            lastActivityTime = Date.now();
+
+            switch(action) {
+                case 'feed':
+                    if (!isEating) {
+                        isEating = true;
+                        
+                        // Start walking animation
+                        pet.classList.add('walking');
+                        
+                        // Move to food bowl
+                        setTimeout(() => {
+                            pet.classList.remove('walking');
+                            pet.classList.add('at-food-bowl');
+                            const foodBowl = document.querySelector('.bowl.food');
+                            foodBowl.classList.add('active');
+                            
+                            // Start eating animation after reaching the bowl
+                            setTimeout(() => {
+                                pet.classList.add('eating');
+                                stats.hunger = Math.min(100, stats.hunger + 15);
+                                stats.energy = Math.min(100, stats.energy + 10);
+                                updateStats();
+                                
+                                // Eat for 3 seconds
+                                setTimeout(() => {
+                                    pet.classList.remove('eating', 'at-food-bowl');
+                                    foodBowl.classList.remove('active');
+                                    
+                                    // Walk back to center
+                                    pet.classList.add('walking');
+                                    setTimeout(() => {
+                                        returnToCenter();
+                                        isEating = false;
+                                    }, 1000);
+                                }, 3000);
+                            }, 500);
+                        }, 100);
+                    }
+                    break;
+
+                case 'play':
+                    if (!isPlaying && stats.energy >= 20) {
+                        isPlaying = true;
+                        
+                        ball.style.left = (petRect.left + petRect.width/2) + 'px';
+                        ball.style.top = (petRect.top - 50) + 'px';
+                        ball.classList.add('active');
+
+                        setTimeout(() => {
+                            pet.classList.add('chasing');
+                            
+                            setTimeout(() => {
+                                ball.classList.remove('active');
+                                returnToCenter();
+                                isPlaying = false;
+                                lastActivityTime = Date.now(); // Reset activity timer
+                            }, 5000);
+                        }, 100);
+
+                        stats.happiness = Math.min(100, stats.happiness + 15);
+                        stats.cleanliness = Math.max(0, stats.cleanliness - 5);
+                        stats.hunger = Math.max(0, stats.hunger - 5);
+                        stats.energy = Math.max(0, stats.energy - 5); // Decrease energy when happiness increases
+                    }
+                    break;
+
+                case 'pet':
+                    hand.style.left = (petRect.left + petRect.width/2 - 20) + 'px';
+                    hand.style.top = (petRect.top - 40) + 'px';
+                    stats.happiness = Math.min(100, stats.happiness + 10);
+                    stats.cleanliness = Math.max(0, stats.cleanliness - 5);
+                    stats.energy = Math.max(0, stats.energy - 5); // Decrease energy when happiness increases
+                    break;
+
+                case 'clean':
+                    hand.style.left = (petRect.left + petRect.width/2 - 20) + 'px';
+                    hand.style.top = (petRect.top + petRect.height - 20) + 'px';
+                    stats.cleanliness = Math.min(100, stats.cleanliness + 20);
+                    break;
+            }
+
+            updateStats();
+            
+            if (action !== 'feed' && action !== 'play') {
+                pet.classList.add('active');
+                setTimeout(() => {
+                    pet.classList.remove('active');
+                }, 200);
+            }
+
+            setTimeout(() => {
+                hand.classList.remove('active');
+            }, 1000);
+        }
+
+        // Update bars more frequently for smooth transitions
+        setInterval(() => {
+            updateStats();
+        }, 50);  // Update bars every 50ms for very smooth animations
+
+        // Initial stats update
+        updateStats();
+    </script>
+</body>
+</html> 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
+
+<script>
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Google Sign-In
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  function signIn() {
+    auth.signInWithPopup(provider)
+      .then((result) => {
+        const user = result.user;
+        console.log('Signed in as:', user.displayName);
+      })
+      .catch((error) => {
+        console.error('Sign-in error:', error);
+      });
+  }
+</script>
+
+<button onclick="signIn()">Sign in with Google</button>
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDn5KLTliVCImGyyaYPJR5WvlUM9cDsK1k",
+  authDomain: "virtual-pet-f942d.firebaseapp.com",
+  projectId: "virtual-pet-f942d",
+  storageBucket: "virtual-pet-f942d.firebasestorage.app",
+  messagingSenderId: "1084420980096",
+  appId: "1:1084420980096:web:2f8cf72092c92811be9565",
+  measurementId: "G-24PJ2ML6PJ"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);

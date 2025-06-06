@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Sign-In with Firebase</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h1>Welcome to My App</h1>
+  <button id="loginBtn">Sign in with Google</button>
+  <button id="logoutBtn" style="display:none;">Logout</button>
+  <p id="userInfo"></p>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDn5KLTliVCImGyyaYPJR5WvlUM9cDsK1k",
+      authDomain: "virtual-pet-f942d.firebaseapp.com",
+      projectId: "virtual-pet-f942d",
+      storageBucket: "virtual-pet-f942d.appspot.com",
+      messagingSenderId: "1084420980096",
+      appId: "1:1084420980096:web:2f8cf72092c92811be9565",
+      measurementId: "G-24PJ2ML6PJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userInfo = document.getElementById('userInfo');
+
+    loginBtn.onclick = () => {
+      signInWithPopup(auth, provider)
+        .then(result => {
+          const user = result.user;
+          userInfo.textContent = `Hello, ${user.displayName}!`;
+          loginBtn.style.display = 'none';
+          logoutBtn.style.display = 'inline';
+        })
+        .catch(error => {
+          alert("Login failed: " + error.message);
+        });
+    };
+
+    logoutBtn.onclick = () => {
+      signOut(auth)
+        .then(() => {
+          userInfo.textContent = '';
+          loginBtn.style.display = 'inline';
+          logoutBtn.style.display = 'none';
+        });
+    };
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        userInfo.textContent = `Hello, ${user.displayName}!`;
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline';
+      } else {
+        userInfo.textContent = '';
+        loginBtn.style.display = 'inline';
+        logoutBtn.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
