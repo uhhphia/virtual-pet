@@ -4,6 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtual Pet Game</title>
+    <!-- Add Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDn5KLTliVCImGyyaYPJR5WvlUM9cDsK1k",
+            authDomain: "virtual-pet-f942d.firebaseapp.com",
+            projectId: "virtual-pet-f942d",
+            storageBucket: "virtual-pet-f942d.firebasestorage.app",
+            messagingSenderId: "1084420980096",
+            appId: "1:1084420980096:web:62e06ea5acc1537bbe9565",
+            measurementId: "G-QPQ8PHHQL6"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Make auth functions available globally
+        window.signInWithGoogle = () => {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const user = result.user;
+                    console.log('Signed in as:', user.displayName);
+                })
+                .catch((error) => {
+                    console.error('Sign-in error:', error);
+                });
+        };
+
+        window.signOut = () => {
+            signOut(auth);
+        };
+
+        // Auth state observer
+        onAuthStateChanged(auth, (user) => {
+            const loginButton = document.getElementById('loginButton');
+            const userInfo = document.getElementById('userInfo');
+            const userName = document.getElementById('userName');
+
+            if (user) {
+                // User is signed in
+                loginButton.style.display = 'none';
+                userInfo.classList.add('visible');
+                userName.textContent = user.displayName;
+            } else {
+                // User is signed out
+                loginButton.style.display = 'flex';
+                userInfo.classList.remove('visible');
+            }
+        });
+    </script>
     <style>
         body {
             margin: 0;
@@ -1545,185 +1603,230 @@
             z-index: 4;
             box-shadow: 0 1px 2px rgba(0,0,0,0.07);
         }
+
+        .login-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .login-button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .login-button:hover {
+            background-color: #357abd;
+        }
+        .user-info {
+            display: none;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .user-info.visible {
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <div class="bedroom">
-        <div class="window">
-            <div class="curtain-left"></div>
-            <div class="curtain-right"></div>
-        </div>
-        <div class="lamp">
-            <div class="lamp-shade"></div>
-            <div class="lamp-base"></div>
-            <div class="lamp-light"></div>
-        </div>
-        <div class="rug"></div>
-        <div class="dust"></div>
-        <div class="dust"></div>
-        <div class="dust"></div>
-        <div class="dust"></div>
-        <div class="dust"></div>
-        <!-- Dog toys scattered around -->
-        <div class="toy bone" style="bottom: 12vh; left: 15vw; --rotation: 25deg;"></div>
-        <div class="toy bone" style="bottom: 18vh; right: 25vw; --rotation: -15deg;"></div>
-        <div class="toy tennis-ball" style="bottom: 15vh; left: 35vw;"></div>
-        <div class="toy tennis-ball" style="bottom: 13vh; right: 15vw;"></div>
-        <div class="toy rope" style="bottom: 14vh; left: 60vw; --rotation: 35deg;"></div>
-        <div class="toy squeaky" style="bottom: 16vh; right: 40vw; --rotation: -10deg;"></div>
-        <div class="bed">
-            <div class="cushion"></div>
-            <div class="pillow"></div>
-            <div class="blanket"></div>
-        </div>
-        <div class="bowl food">
-            <div class="side"></div>
-            <div class="contents"></div>
-            <div class="label">Food</div>
-        </div>
-        <div class="bowl water">
-            <div class="side"></div>
-            <div class="contents"></div>
-            <div class="label">Water</div>
-        </div>
-        <div class="ball"></div>
-        <div class="pet">
-            <div class="tail"></div>
-            <div class="head">
-                <div class="ear-left"></div>
-                <div class="ear-right"></div>
-                <div class="eye-left"></div>
-                <div class="eye-right"></div>
-                <div class="nose"></div>
-                <div class="patch snout"></div>
-            </div>
-            <div class="patch chest"></div>
-            <div class="leg leg-front-left"></div>
-            <div class="leg leg-front-right"></div>
-            <div class="leg leg-back-left"></div>
-            <div class="leg leg-back-right"></div>
-        </div>
-        <div class="hand"></div>
-        <div class="wire-crate">
-            <div class="crate-tray"></div>
-            <div class="crate-door">
-                <div class="door-latch"></div>
-                <div class="door-hinge-top"></div>
-                <div class="door-hinge-bottom"></div>
-            </div>
-        </div>
-        <div class="dog-food-bag">
-            <div class="bag-top"></div>
-            <div class="brand-name">PHIA2COOL</div>
-            <div class="sub-text">DOG FOOD</div>
-            <svg class="dog-food-pile" viewBox="0 0 48 24" style="position:absolute; top:110px; left:50%; transform:translateX(-50%); width:80px; height:40px;" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="24" cy="20" rx="18" ry="6" fill="#a0522d"/>
-                <ellipse cx="14" cy="18" rx="4" ry="2.5" fill="#8b4513"/>
-                <ellipse cx="34" cy="18" rx="4" ry="2.5" fill="#8b4513"/>
-                <ellipse cx="24" cy="16" rx="5" ry="3" fill="#cd853f"/>
-                <ellipse cx="20" cy="20" rx="2.5" ry="1.5" fill="#deb887"/>
-                <ellipse cx="28" cy="20" rx="2.5" ry="1.5" fill="#deb887"/>
-                <ellipse cx="10" cy="22" rx="2" ry="1.2" fill="#a0522d"/>
-                <ellipse cx="38" cy="22" rx="2" ry="1.2" fill="#a0522d"/>
-                <ellipse cx="18" cy="14" rx="2" ry="1.2" fill="#8b4513"/>
-                <ellipse cx="30" cy="14" rx="2" ry="1.2" fill="#8b4513"/>
-                <ellipse cx="24" cy="10" rx="1.5" ry="1" fill="#cd853f"/>
-                <ellipse cx="12" cy="16" rx="1.5" ry="1" fill="#deb887"/>
-                <ellipse cx="36" cy="16" rx="1.5" ry="1" fill="#deb887"/>
-            </svg>
-            <div class="weight-label">30 LB</div>
-        </div>
-        <div class="table">
-            <div class="table-leg front-left"></div>
-            <div class="table-leg front-right"></div>
-            <div class="table-leg back-left"></div>
-            <div class="table-leg back-right"></div>
-            <div class="treat-jar">
-                <div class="treat-jar-lid"></div>
-                <div class="treat-jar-label">Dog Treats</div>
-                <div class="treat-jar-treat t1"></div>
-                <div class="treat-jar-treat t2"></div>
-                <div class="treat-jar-treat t3"></div>
-                <div class="treat-jar-treat t4"></div>
-                <div class="treat-jar-treat t5"></div>
-                <div class="treat-jar-treat" style="left: 5px; top: 60px; background: #a0522d;"></div>
-                <div class="treat-jar-treat" style="left: 15px; top: 60px; background: #deb887;"></div>
-                <div class="treat-jar-treat" style="left: 25px; top: 60px; background: #8b4513;"></div>
-                <div class="treat-jar-treat" style="left: 35px; top: 60px; background: #cd853f;"></div>
-                <div class="treat-jar-treat" style="left: 40px; top: 60px; background: #a0522d;"></div>
-                <div class="treat-jar-treat" style="left: 10px; top: 52px; background: #deb887;"></div>
-                <div class="treat-jar-treat" style="left: 20px; top: 52px; background: #8b4513;"></div>
-                <div class="treat-jar-treat" style="left: 30px; top: 52px; background: #cd853f;"></div>
-                <div class="treat-jar-treat" style="left: 38px; top: 52px; background: #a0522d;"></div>
-                <div class="treat-jar-treat" style="left: 5px; top: 44px; background: #deb887;"></div>
-                <div class="treat-jar-treat" style="left: 15px; top: 44px; background: #8b4513;"></div>
-                <div class="treat-jar-treat" style="left: 25px; top: 44px; background: #cd853f;"></div>
-                <div class="treat-jar-treat" style="left: 35px; top: 44px; background: #a0522d;"></div>
-                <div class="treat-jar-treat" style="left: 40px; top: 44px; background: #deb887;"></div>
-                <div class="treat-jar-treat" style="left: 20px; top: 30px; background: #a0522d;"></div>
-                <div class="treat-jar-treat" style="left: 35px; top: 42px; background: #deb887;"></div>
-                <div class="treat-jar-treat" style="left: 10px; top: 48px; background: #8b4513;"></div>
-                <div class="treat-jar-treat" style="left: 28px; top: 58px; background: #cd853f;"></div>
-                <div class="treat-jar-treat" style="left: 38px; top: 60px; background: #a0522d;"></div>
-                <div class="treat-jar-treat" style="left: 5px; top: 35px; background: #deb887;"></div>
-                <div class="treat-jar-treat" style="left: 42px; top: 50px; background: #8b4513;"></div>
-                <div class="treat-jar-treat" style="left: 25px; top: 40px; background: #cd853f;"></div>
-                <div class="treat-jar-treat" style="left: 15px; top: 60px; background: #a0522d;"></div>
-                <div class="treat-jar-treat" style="left: 30px; top: 48px; background: #deb887;"></div>
-                <div class="treat-jar-treat" style="left: 40px; top: 55px; background: #8b4513;"></div>
-                <div class="treat-jar-treat" style="left: 12px; top: 25px; background: #cd853f;"></div>
-                <div class="treat-jar-treat" style="left: 32px; top: 25px; background: #a0522d;"></div>
-                <div class="treat-jar-treat" style="left: 22px; top: 55px; background: #deb887;"></div>
-                <div class="treat-jar-treat" style="left: 8px; top: 58px; background: #8b4513;"></div>
-                <div class="treat-jar-treat" style="left: 44px; top: 38px; background: #cd853f;"></div>
-                <div class="treat-jar-treat" style="left: 18px; top: 52px; background: #a0522d;"></div>
-                <div class="treat-jar-treat" style="left: 36px; top: 32px; background: #deb887;"></div>
-            </div>
+    <div class="login-container">
+        <button id="loginButton" class="login-button" onclick="signInWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18">
+            Sign in with Google
+        </button>
+        <div id="userInfo" class="user-info">
+            <p>Welcome, <span id="userName"></span>!</p>
+            <button id="logoutButton" class="login-button" onclick="signOut()" style="background-color: #dc3545;">Logout</button>
         </div>
     </div>
 
-    <div class="controls">
-        <button onclick="performAction('pet')">Pet</button>
-        <button onclick="performAction('feed')">Feed</button>
-        <button onclick="performAction('play')">Play</button>
-        <button onclick="performAction('clean')">Clean</button>
-    </div>
+    <div class="game-container">
+        <div class="bedroom">
+            <div class="window">
+                <div class="curtain-left"></div>
+                <div class="curtain-right"></div>
+            </div>
+            <div class="lamp">
+                <div class="lamp-shade"></div>
+                <div class="lamp-base"></div>
+                <div class="lamp-light"></div>
+            </div>
+            <div class="rug"></div>
+            <div class="dust"></div>
+            <div class="dust"></div>
+            <div class="dust"></div>
+            <div class="dust"></div>
+            <div class="dust"></div>
+            <!-- Dog toys scattered around -->
+            <div class="toy bone" style="bottom: 12vh; left: 15vw; --rotation: 25deg;"></div>
+            <div class="toy bone" style="bottom: 18vh; right: 25vw; --rotation: -15deg;"></div>
+            <div class="toy tennis-ball" style="bottom: 15vh; left: 35vw;"></div>
+            <div class="toy tennis-ball" style="bottom: 13vh; right: 15vw;"></div>
+            <div class="toy rope" style="bottom: 14vh; left: 60vw; --rotation: 35deg;"></div>
+            <div class="toy squeaky" style="bottom: 16vh; right: 40vw; --rotation: -10deg;"></div>
+            <div class="bed">
+                <div class="cushion"></div>
+                <div class="pillow"></div>
+                <div class="blanket"></div>
+            </div>
+            <div class="bowl food">
+                <div class="side"></div>
+                <div class="contents"></div>
+                <div class="label">Food</div>
+            </div>
+            <div class="bowl water">
+                <div class="side"></div>
+                <div class="contents"></div>
+                <div class="label">Water</div>
+            </div>
+            <div class="ball"></div>
+            <div class="pet">
+                <div class="tail"></div>
+                <div class="head">
+                    <div class="ear-left"></div>
+                    <div class="ear-right"></div>
+                    <div class="eye-left"></div>
+                    <div class="eye-right"></div>
+                    <div class="nose"></div>
+                    <div class="patch snout"></div>
+                </div>
+                <div class="patch chest"></div>
+                <div class="leg leg-front-left"></div>
+                <div class="leg leg-front-right"></div>
+                <div class="leg leg-back-left"></div>
+                <div class="leg leg-back-right"></div>
+            </div>
+            <div class="hand"></div>
+            <div class="wire-crate">
+                <div class="crate-tray"></div>
+                <div class="crate-door">
+                    <div class="door-latch"></div>
+                    <div class="door-hinge-top"></div>
+                    <div class="door-hinge-bottom"></div>
+                </div>
+            </div>
+            <div class="dog-food-bag">
+                <div class="bag-top"></div>
+                <div class="brand-name">PHIA2COOL</div>
+                <div class="sub-text">DOG FOOD</div>
+                <svg class="dog-food-pile" viewBox="0 0 48 24" style="position:absolute; top:110px; left:50%; transform:translateX(-50%); width:80px; height:40px;" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="24" cy="20" rx="18" ry="6" fill="#a0522d"/>
+                    <ellipse cx="14" cy="18" rx="4" ry="2.5" fill="#8b4513"/>
+                    <ellipse cx="34" cy="18" rx="4" ry="2.5" fill="#8b4513"/>
+                    <ellipse cx="24" cy="16" rx="5" ry="3" fill="#cd853f"/>
+                    <ellipse cx="20" cy="20" rx="2.5" ry="1.5" fill="#deb887"/>
+                    <ellipse cx="28" cy="20" rx="2.5" ry="1.5" fill="#deb887"/>
+                    <ellipse cx="10" cy="22" rx="2" ry="1.2" fill="#a0522d"/>
+                    <ellipse cx="38" cy="22" rx="2" ry="1.2" fill="#a0522d"/>
+                    <ellipse cx="18" cy="14" rx="2" ry="1.2" fill="#8b4513"/>
+                    <ellipse cx="30" cy="14" rx="2" ry="1.2" fill="#8b4513"/>
+                    <ellipse cx="24" cy="10" rx="1.5" ry="1" fill="#cd853f"/>
+                    <ellipse cx="12" cy="16" rx="1.5" ry="1" fill="#deb887"/>
+                    <ellipse cx="36" cy="16" rx="1.5" ry="1" fill="#deb887"/>
+                </svg>
+                <div class="weight-label">30 LB</div>
+            </div>
+            <div class="table">
+                <div class="table-leg front-left"></div>
+                <div class="table-leg front-right"></div>
+                <div class="table-leg back-left"></div>
+                <div class="table-leg back-right"></div>
+                <div class="treat-jar">
+                    <div class="treat-jar-lid"></div>
+                    <div class="treat-jar-label">Dog Treats</div>
+                    <div class="treat-jar-treat t1"></div>
+                    <div class="treat-jar-treat t2"></div>
+                    <div class="treat-jar-treat t3"></div>
+                    <div class="treat-jar-treat t4"></div>
+                    <div class="treat-jar-treat t5"></div>
+                    <div class="treat-jar-treat" style="left: 5px; top: 60px; background: #a0522d;"></div>
+                    <div class="treat-jar-treat" style="left: 15px; top: 60px; background: #deb887;"></div>
+                    <div class="treat-jar-treat" style="left: 25px; top: 60px; background: #8b4513;"></div>
+                    <div class="treat-jar-treat" style="left: 35px; top: 60px; background: #cd853f;"></div>
+                    <div class="treat-jar-treat" style="left: 40px; top: 60px; background: #a0522d;"></div>
+                    <div class="treat-jar-treat" style="left: 10px; top: 52px; background: #deb887;"></div>
+                    <div class="treat-jar-treat" style="left: 20px; top: 52px; background: #8b4513;"></div>
+                    <div class="treat-jar-treat" style="left: 30px; top: 52px; background: #cd853f;"></div>
+                    <div class="treat-jar-treat" style="left: 38px; top: 52px; background: #a0522d;"></div>
+                    <div class="treat-jar-treat" style="left: 5px; top: 44px; background: #deb887;"></div>
+                    <div class="treat-jar-treat" style="left: 15px; top: 44px; background: #8b4513;"></div>
+                    <div class="treat-jar-treat" style="left: 25px; top: 44px; background: #cd853f;"></div>
+                    <div class="treat-jar-treat" style="left: 35px; top: 44px; background: #a0522d;"></div>
+                    <div class="treat-jar-treat" style="left: 40px; top: 44px; background: #deb887;"></div>
+                    <div class="treat-jar-treat" style="left: 20px; top: 30px; background: #a0522d;"></div>
+                    <div class="treat-jar-treat" style="left: 35px; top: 42px; background: #deb887;"></div>
+                    <div class="treat-jar-treat" style="left: 10px; top: 48px; background: #8b4513;"></div>
+                    <div class="treat-jar-treat" style="left: 28px; top: 58px; background: #cd853f;"></div>
+                    <div class="treat-jar-treat" style="left: 38px; top: 60px; background: #a0522d;"></div>
+                    <div class="treat-jar-treat" style="left: 5px; top: 35px; background: #deb887;"></div>
+                    <div class="treat-jar-treat" style="left: 42px; top: 50px; background: #8b4513;"></div>
+                    <div class="treat-jar-treat" style="left: 25px; top: 40px; background: #cd853f;"></div>
+                    <div class="treat-jar-treat" style="left: 15px; top: 60px; background: #a0522d;"></div>
+                    <div class="treat-jar-treat" style="left: 30px; top: 48px; background: #deb887;"></div>
+                    <div class="treat-jar-treat" style="left: 40px; top: 55px; background: #8b4513;"></div>
+                    <div class="treat-jar-treat" style="left: 12px; top: 25px; background: #cd853f;"></div>
+                    <div class="treat-jar-treat" style="left: 32px; top: 25px; background: #a0522d;"></div>
+                    <div class="treat-jar-treat" style="left: 22px; top: 55px; background: #deb887;"></div>
+                    <div class="treat-jar-treat" style="left: 8px; top: 58px; background: #8b4513;"></div>
+                    <div class="treat-jar-treat" style="left: 44px; top: 38px; background: #cd853f;"></div>
+                    <div class="treat-jar-treat" style="left: 18px; top: 52px; background: #a0522d;"></div>
+                    <div class="treat-jar-treat" style="left: 36px; top: 32px; background: #deb887;"></div>
+                </div>
+            </div>
+        </div>
 
-    <div class="status-bars">
-        <div class="status-bar-container">
-            <div class="status-bar-label">
-                <span class="name">Happiness</span>
-                <span class="value">100%</span>
-            </div>
-            <div class="status-bar">
-                <div class="status-bar-fill happiness" id="happiness"></div>
-            </div>
+        <div class="controls">
+            <button onclick="performAction('pet')">Pet</button>
+            <button onclick="performAction('feed')">Feed</button>
+            <button onclick="performAction('play')">Play</button>
+            <button onclick="performAction('clean')">Clean</button>
         </div>
-        <div class="status-bar-container">
-            <div class="status-bar-label">
-                <span class="name">Hunger</span>
-                <span class="value">100%</span>
+
+        <div class="status-bars">
+            <div class="status-bar-container">
+                <div class="status-bar-label">
+                    <span class="name">Happiness</span>
+                    <span class="value">100%</span>
+                </div>
+                <div class="status-bar">
+                    <div class="status-bar-fill happiness" id="happiness"></div>
+                </div>
             </div>
-            <div class="status-bar">
-                <div class="status-bar-fill hunger" id="hunger"></div>
+            <div class="status-bar-container">
+                <div class="status-bar-label">
+                    <span class="name">Hunger</span>
+                    <span class="value">100%</span>
+                </div>
+                <div class="status-bar">
+                    <div class="status-bar-fill hunger" id="hunger"></div>
+                </div>
             </div>
-        </div>
-        <div class="status-bar-container">
-            <div class="status-bar-label">
-                <span class="name">Cleanliness</span>
-                <span class="value">100%</span>
+            <div class="status-bar-container">
+                <div class="status-bar-label">
+                    <span class="name">Cleanliness</span>
+                    <span class="value">100%</span>
+                </div>
+                <div class="status-bar">
+                    <div class="status-bar-fill cleanliness" id="cleanliness"></div>
+                </div>
             </div>
-            <div class="status-bar">
-                <div class="status-bar-fill cleanliness" id="cleanliness"></div>
-            </div>
-        </div>
-        <div class="status-bar-container">
-            <div class="status-bar-label">
-                <span class="name">Energy</span>
-                <span class="value">100%</span>
-            </div>
-            <div class="status-bar">
-                <div class="status-bar-fill energy" id="energy"></div>
+            <div class="status-bar-container">
+                <div class="status-bar-label">
+                    <span class="name">Energy</span>
+                    <span class="value">100%</span>
+                </div>
+                <div class="status-bar">
+                    <div class="status-bar-fill energy" id="energy"></div>
+                </div>
             </div>
         </div>
     </div>
