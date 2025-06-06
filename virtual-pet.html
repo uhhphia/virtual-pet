@@ -29,19 +29,30 @@
         const provider = new GoogleAuthProvider();
 
         // Make auth functions available globally
-        window.signInWithGoogle = () => {
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    const user = result.user;
-                    console.log('Signed in as:', user.displayName);
-                })
-                .catch((error) => {
-                    console.error('Sign-in error:', error);
-                });
+        window.signInWithGoogle = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                console.log('Signed in as:', user.displayName);
+                document.getElementById('errorMessage').style.display = 'none';
+            } catch (error) {
+                console.error('Sign-in error:', error);
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = `Error: ${error.message}`;
+                errorMessage.style.display = 'block';
+            }
         };
 
-        window.signOut = () => {
-            signOut(auth);
+        window.signOut = async () => {
+            try {
+                await signOut(auth);
+                document.getElementById('errorMessage').style.display = 'none';
+            } catch (error) {
+                console.error('Sign-out error:', error);
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = `Error: ${error.message}`;
+                errorMessage.style.display = 'block';
+            }
         };
 
         // Auth state observer
@@ -49,12 +60,14 @@
             const loginButton = document.getElementById('loginButton');
             const userInfo = document.getElementById('userInfo');
             const userName = document.getElementById('userName');
+            const errorMessage = document.getElementById('errorMessage');
 
             if (user) {
                 // User is signed in
                 loginButton.style.display = 'none';
                 userInfo.classList.add('visible');
                 userName.textContent = user.displayName;
+                errorMessage.style.display = 'none';
             } else {
                 // User is signed out
                 loginButton.style.display = 'flex';
@@ -1635,6 +1648,15 @@
         .user-info.visible {
             display: block;
         }
+        .error-message {
+            display: none;
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -1647,6 +1669,7 @@
             <p>Welcome, <span id="userName"></span>!</p>
             <button id="logoutButton" class="login-button" onclick="signOut()" style="background-color: #dc3545;">Logout</button>
         </div>
+        <div id="errorMessage" class="error-message"></div>
     </div>
 
     <div class="game-container">
